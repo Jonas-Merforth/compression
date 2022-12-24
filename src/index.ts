@@ -1,24 +1,28 @@
 import Decimal from 'decimal.js';
+import {decodeMap, encodeMap} from "./maps";
 
 function encodeString(inputString: string): string {
-    let encodedString = "0.";
-    [...inputString].forEach((char, index) => {
-        const code = encodedString.charCodeAt(index);
-        encodedString += encodedString.charCodeAt(index);
+    let encodedString = "";
+    [...inputString].forEach((char: string) => {
+        const code = encodeMap.get(char);
+        encodedString += code;
     })
     return encodedString;
 }
 
 function decodeString(inputString: string): string {
-    const numbersStringArray: string[] = [...inputString.slice(2, inputString.length)];
+    const numbersStringArray: string[] = [...inputString];
     const charArray: number[] = [];
     for (let i = 0; i < numbersStringArray.length; i += 2) {
         const charString = "" + numbersStringArray[i] + numbersStringArray[i+1];
         charArray.push(parseInt(charString));
     }
     console.log('charArray: ', charArray);
-    return String.fromCharCode(...charArray);
+    return charArray.map((number: number) => {
+        return decodeMap.get(number) || '';
+    }).join('');
 }
+
 
 const startTime = performance.now();
 
