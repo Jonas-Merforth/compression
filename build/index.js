@@ -1,7 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const maps_1 = require("./maps");
-const gcd = require('compute-gcd');
+const gcd_own_1 = __importDefault(require("./gcd_own"));
 function encodeString(inputString) {
     let encodedString = "";
     [...inputString].forEach((char) => {
@@ -24,13 +27,13 @@ function decodeString(inputString) {
 }
 function compress(encodedString) {
     const length = encodedString.length;
-    const numerator = Number(encodedString);
-    const denominator = Math.pow(10, length);
+    const numerator = BigInt(encodedString);
+    const denominator = BigInt(Math.pow(10, length));
     console.log('num/den: ', numerator, '/', denominator);
-    const greatestDivisor = gcd(numerator, denominator);
+    const greatestDivisor = BigInt((0, gcd_own_1.default)(numerator, denominator));
     console.log('gcd: ', greatestDivisor);
-    const compressed = '' + numerator / greatestDivisor;
-    console.log('compressed: ', compressed, ', length: ', compressed.length);
+    const compressed = numerator / greatestDivisor;
+    console.log('compressed: ', compressed, ', length: ', ('' + compressed).length);
     return {
         message: compressed,
         denominator: denominator / greatestDivisor,
@@ -38,25 +41,19 @@ function compress(encodedString) {
     };
 }
 function decompress(compressedString) {
-    const denominator = Math.pow(10, compressedString.length);
+    const denominator = BigInt(Math.pow(10, compressedString.length));
     const greatestDivisor = denominator / compressedString.denominator;
-    const original = greatestDivisor * Number(compressedString.message);
+    const original = greatestDivisor * BigInt(compressedString.message);
     console.log('original: ', original);
     return '' + original;
 }
-// m1 = message/gcd
-// l1 == (length+1) / gcd
-// value = m1/l1
+console.log((0, gcd_own_1.default)(BigInt(200), BigInt(25)));
 const startTime = performance.now();
-const testString = "Hello1234";
+const testString = "Hello1234567890123567890";
 //const testString = "Hello World test lmao hello does it work?"; //error?
 //const testString = "abc";
 const encoded = encodeString(testString);
 console.log('encoded: ', encoded);
-/*
-const decoded = decodeString(encoded);
-console.log('decoded: ', decoded);
- */
 const compressed = compress(encoded);
 console.log('compressed: ', compressed);
 const originalEncoded = decompress(compressed);
