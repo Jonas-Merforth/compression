@@ -6,8 +6,9 @@ import bigIntGCD from "./gcd_own";
 
 interface CompressedString {
     message: bigint;
-    denominator: bigint;
-    length: number;
+    gcd: bigint;
+    length: number; //not needed, use instead of gcd?
+    base: number; // //not needed, use instead of gcd?
 }
 
 function encodeString(inputString: string): string {
@@ -32,39 +33,50 @@ function decodeString(inputString: string): string {
     }).join('');
 }
 
+function findBestBase(numerator: bigint, length: number, tries: number): number {
+    let bestTuple: [number, bigint] = [0, BigInt(0)];
+    for (let i = 2; i < tries - 2; i++) {
+        const denominator = BigInt(Math.pow(i, length));
+        //if (denominator > numerator) break; //TODO can be the case?
+        const greatestDivisor = BigInt(bigIntGCD(numerator, denominator));
+        if (greatestDivisor > bestTuple[1]) bestTuple = [i, greatestDivisor];
+    }
+    console.log('best: ', bestTuple);
+    return bestTuple[0];
+}
+
 function compress(encodedString: string): CompressedString {
     const length = encodedString.length;
     const numerator = BigInt(encodedString);
-    const denominator = BigInt(Math.pow(10, length));
-    console.log('num/den: ', numerator, '/', denominator);
+    const bestBase = findBestBase(numerator, length, 10000);
+    const denominator = BigInt(Math.pow(bestBase, length));
     const greatestDivisor = BigInt(bigIntGCD(numerator, denominator));
-    console.log('gcd: ', greatestDivisor);
     const compressed = numerator/greatestDivisor;
-    console.log('compressed: ', compressed, ', length: ', ('' + compressed).length);
+    console.log('compressed length: ', ('' + compressed).length);
     return {
         message: compressed,
-        denominator: denominator/greatestDivisor,
-        length: length
+        //denominator: denominator/greatestDivisor,
+        gcd: greatestDivisor,
+        length: length,
+        base: bestBase
     };
 }
 
 function decompress(compressedString: CompressedString): string {
-    const denominator =  BigInt(Math.pow(10, compressedString.length));
-    const greatestDivisor = denominator / compressedString.denominator;
+    const denominator =  BigInt(Math.pow(compressedString.base, compressedString.length));
+    const greatestDivisor = compressedString.gcd;
+    //const greatestDivisor = BigInt(bigIntGCD(compressedString.message, denominator));
     const original = greatestDivisor * BigInt(compressedString.message);
     console.log('original: ', original);
     return '' + original;
 }
 
 
-console.log(bigIntGCD(BigInt(200), BigInt(25)));
-
 const startTime = performance.now();
-
 
 const testString = "Hello1234567890123567890";
 //const testString = "Hello World test lmao hello does it work?"; //error?
-//const testString = "abc";
+//const testString = "abcd";
 const encoded = encodeString(testString);
 
 console.log('encoded: ', encoded);
